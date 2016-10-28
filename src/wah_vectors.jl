@@ -9,15 +9,19 @@
 
 function Base.push!(a::Vector{WAHElement}, value::UInt32)
     if length(a) == 0
-        # First element gets added as a literal value.
+        # First element gets pushed as a literal value, no matter what it is.
         push!(a, convert(WAHElement, value))
     elseif value == 0x00000000
         a_tail = reinterpret(UInt32, a[endof(a)])
+        # If the tail of the vector is a literal of all zeros, combine the two literals.
         if a_tail == 0x00000000
             a[endof(a)] = 0x80000002
+        # If the tail is a compressed run of zero words, and is not full, then
+        # increment the counter.
         elseif (a_tail >= 0x80000000) && (a_tail < 0xC0000000)
             a[endof(a)] += UInt32(1)
         else
+            # Otherwise simply push the value onto the end as a literal.
             push!(a, convert(WAHElement, value))
         end
     elseif value == 0x7FFFFFFF
@@ -33,7 +37,6 @@ function Base.push!(a::Vector{WAHElement}, value::UInt32)
         push!(a, convert(WAHElement, value))
     end
 end
-
 
 function Vector{WAHElements}(x::Vector{UInt32})
     n_cmp = (x[1] & UInt32(1)) << 30
