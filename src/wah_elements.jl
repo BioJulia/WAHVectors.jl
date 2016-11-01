@@ -33,7 +33,6 @@ Base.:+(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
 Base.:+(x::UInt32, y::WAHElement) = y + x
 
 Base.:-(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) - y)
-Base.:-(x::UInt32, y::WAHElement) = WAHElement(x - UInt32(y))
 
 Base.:>=(x::WAHElement, y::UInt32) = UInt32(x) >= y
 Base.:>=(x::UInt32, y::WAHElement) = x >= UInt32(y)
