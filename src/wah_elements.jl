@@ -132,7 +132,7 @@ than a number of compressed words.
 """
 isfull(x::WAHElement) = (x == WAH_FULL_ZEROS) || (x == WAH_FULL_ONES)
 
-matchingfills(x::WAHElement, y::WAHElement) = (x >> 30) == (y >> 30)
+matchingfills(x::WAHElement, y::WAHElement) = (UInt32(x) >> 30) == (UInt32(y) >> 30)
 
 hasroom(x::WAHElement) = nruns(x) < WAH_MAX_NWORDS
 hasroom(x::WAHElement, required::UInt32) = (nruns(x) + required) < WAH_MAX_NWORDS
