@@ -4,173 +4,169 @@ using Base.Test
 
 using WAHVectors
 
-@testset "WAH Vector Elements" begin
-    @testset "Constructors" begin
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            @test WAHElement(0x00000000, n) == reinterpret(WAHElement, 0x80000000 + n)
-            @test WAHElement(0x00000001, n) == reinterpret(WAHElement, 0xC0000000 + n)
+@testset "Internals" begin
+    @testset "WAH Vector Elements" begin
+        @testset "Constructors" begin
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                @test WAHVectors.WAHElement(0x00000000, n) == reinterpret(WAHVectors.WAHElement, 0x80000000 + n)
+                @test WAHVectors.WAHElement(0x00000001, n) == reinterpret(WAHVectors.WAHElement, 0xC0000000 + n)
+            end
         end
-    end
-    @testset "Operators" begin
-        @test (WAH_LITERAL_ONES & 0x00000000) == WAH_LITERAL_ZEROS
-        @test (WAHElement(0x00000001, UInt32(6)) & 0xFFFFFFFF) == WAHElement(0x00000001, UInt32(6))
+        @testset "Operators" begin
+            @test (WAHVectors.WAH_LITERAL_ONES & 0x00000000) == WAHVectors.WAH_LITERAL_ZEROS
+            @test (WAHVectors.WAHElement(0x00000001, UInt32(6)) & 0xFFFFFFFF) == WAHVectors.WAHElement(0x00000001, UInt32(6))
 
-        for i in 1:100
-            n1 = rand(0x00000001:WAH_MAX_NWORDS)
-            n2 = rand(0x00000001:WAH_MAX_NWORDS)
-            n3 = rand(n1:WAH_MAX_NWORDS)
-            v = rand(0x00000000:0x00000001)
+            for i in 1:100
+                n1 = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                n2 = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                n3 = rand(n1:WAHVectors.WAH_MAX_NWORDS)
+                v = rand(0x00000000:0x00000001)
 
-            @test (n1 + WAHElement(v, n2)) == WAHElement(v, n1 + n2)
-            @test (WAHElement(v, n1) + n2) == WAHElement(v, n1 + n2)
-            @test (WAHElement(v, n3) - n1) == WAHElement(v, n3 - n1)
+                @test (n1 + WAHVectors.WAHElement(v, n2)) == WAHVectors.WAHElement(v, n1 + n2)
+                @test (WAHVectors.WAHElement(v, n1) + n2) == WAHVectors.WAHElement(v, n1 + n2)
+                @test (WAHVectors.WAHElement(v, n3) - n1) == WAHVectors.WAHElement(v, n3 - n1)
+            end
         end
-    end
-    @testset "iscompressed" begin
-        @test !isruns(WAH_LITERAL_ZEROS)
-        @test !isruns(WAH_LITERAL_ONES)
-        @test isruns(WAH_FULL_ZEROS)
-        @test isruns(WAH_FULL_ONES)
+        @testset "iscompressed" begin
+            @test !WAHVectors.isruns(WAHVectors.WAH_LITERAL_ZEROS)
+            @test !WAHVectors.isruns(WAHVectors.WAH_LITERAL_ONES)
+            @test WAHVectors.isruns(WAHVectors.WAH_FULL_ZEROS)
+            @test WAHVectors.isruns(WAHVectors.WAH_FULL_ONES)
 
-        @test !is_zeros_runs(WAH_LITERAL_ZEROS)
-        @test !is_zeros_runs(WAH_LITERAL_ONES)
-        @test is_zeros_runs(WAH_FULL_ZEROS)
-        @test !is_zeros_runs(WAH_FULL_ONES)
+            @test !WAHVectors.is_zeros_runs(WAHVectors.WAH_LITERAL_ZEROS)
+            @test !WAHVectors.is_zeros_runs(WAHVectors.WAH_LITERAL_ONES)
+            @test WAHVectors.is_zeros_runs(WAHVectors.WAH_FULL_ZEROS)
+            @test !WAHVectors.is_zeros_runs(WAHVectors.WAH_FULL_ONES)
 
-        @test !is_ones_runs(WAH_LITERAL_ZEROS)
-        @test !is_ones_runs(WAH_LITERAL_ONES)
-        @test !is_ones_runs(WAH_FULL_ZEROS)
-        @test is_ones_runs(WAH_FULL_ONES)
+            @test !WAHVectors.is_ones_runs(WAHVectors.WAH_LITERAL_ZEROS)
+            @test !WAHVectors.is_ones_runs(WAHVectors.WAH_LITERAL_ONES)
+            @test !WAHVectors.is_ones_runs(WAHVectors.WAH_FULL_ZEROS)
+            @test WAHVectors.is_ones_runs(WAHVectors.WAH_FULL_ONES)
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
-            el = WAHElement(rand(0x00000000:0x7FFFFFFF))
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
+                el = WAHVectors.WAHElement(rand(0x00000000:0x7FFFFFFF))
 
-            @test isruns(e0)
-            @test isruns(e1)
-            @test !isruns(el)
-            @test is_zeros_runs(e0)
-            @test !is_zeros_runs(e1)
-            @test !is_zeros_runs(el)
-            @test !is_ones_runs(e0)
-            @test is_ones_runs(e1)
-            @test !is_ones_runs(el)
+                @test WAHVectors.isruns(e0)
+                @test WAHVectors.isruns(e1)
+                @test !WAHVectors.isruns(el)
+                @test WAHVectors.is_zeros_runs(e0)
+                @test !WAHVectors.is_zeros_runs(e1)
+                @test !WAHVectors.is_zeros_runs(el)
+                @test !WAHVectors.is_ones_runs(e0)
+                @test WAHVectors.is_ones_runs(e1)
+                @test !WAHVectors.is_ones_runs(el)
+            end
         end
-    end
-    @testset "isliteral" begin
-        @test isliteral(WAH_LITERAL_ZEROS)
-        @test isliteral(WAH_LITERAL_ONES)
-        @test !isliteral(WAH_FULL_ZEROS)
-        @test !isliteral(WAH_FULL_ONES)
+        @testset "isliteral" begin
+            @test WAHVectors.isliteral(WAHVectors.WAH_LITERAL_ZEROS)
+            @test WAHVectors.isliteral(WAHVectors.WAH_LITERAL_ONES)
+            @test !WAHVectors.isliteral(WAHVectors.WAH_FULL_ZEROS)
+            @test !WAHVectors.isliteral(WAHVectors.WAH_FULL_ONES)
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
-            el = WAHElement(rand(0x00000000:0x7FFFFFFF))
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
+                el = WAHVectors.WAHElement(rand(0x00000000:0x7FFFFFFF))
 
-            @test !isliteral(e0)
-            @test !isliteral(e1)
-            @test isliteral(el)
+                @test !WAHVectors.isliteral(e0)
+                @test !WAHVectors.isliteral(e1)
+                @test WAHVectors.isliteral(el)
+            end
         end
-    end
-    @testset "nwords" begin
-        @test nwords(WAH_LITERAL_ZEROS) == 1
-        @test nwords(WAH_LITERAL_ONES) == 1
-        @test nwords(WAH_FULL_ZEROS) == WAH_MAX_NWORDS
-        @test nwords(WAH_FULL_ONES) == WAH_MAX_NWORDS
+        @testset "nwords" begin
+            @test WAHVectors.nwords(WAHVectors.WAH_LITERAL_ZEROS) == 1
+            @test WAHVectors.nwords(WAHVectors.WAH_LITERAL_ONES) == 1
+            @test WAHVectors.nwords(WAHVectors.WAH_FULL_ZEROS) == WAHVectors.WAH_MAX_NWORDS
+            @test WAHVectors.nwords(WAHVectors.WAH_FULL_ONES) == WAHVectors.WAH_MAX_NWORDS
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
-            el = WAHElement(rand(0x00000000:0x7FFFFFFF))
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
+                el = WAHVectors.WAHElement(rand(0x00000000:0x7FFFFFFF))
 
-            @test nwords(e0) == n
-            @test nwords(e1) == n
-            @test nwords(el) == 0x00000001
+                @test WAHVectors.nwords(e0) == n
+                @test WAHVectors.nwords(e1) == n
+                @test WAHVectors.nwords(el) == 0x00000001
+            end
         end
-    end
-    @testset "runval" begin
-        @test runval(WAH_FULL_ZEROS) == 0x00000000
-        @test runval(WAH_FULL_ONES) == 0x00000001
+        @testset "runval" begin
+            @test WAHVectors.runval(WAHVectors.WAH_FULL_ZEROS) == 0x00000000
+            @test WAHVectors.runval(WAHVectors.WAH_FULL_ONES) == 0x00000001
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
 
-            @test runval(e0) == 0x00000000
-            @test runval(e1) == 0x00000001
+                @test WAHVectors.runval(e0) == 0x00000000
+                @test WAHVectors.runval(e1) == 0x00000001
+            end
         end
-    end
-    @testset "nruns" begin
-        @test nruns(WAH_FULL_ZEROS) == WAH_MAX_NWORDS
-        @test nruns(WAH_FULL_ONES) == WAH_MAX_NWORDS
+        @testset "nruns" begin
+            @test WAHVectors.nruns(WAHVectors.WAH_FULL_ZEROS) == WAHVectors.WAH_MAX_NWORDS
+            @test WAHVectors.nruns(WAHVectors.WAH_FULL_ONES) == WAHVectors.WAH_MAX_NWORDS
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
 
-            @test nruns(e0) == n
-            @test nruns(e1) == n
+                @test WAHVectors.nruns(e0) == n
+                @test WAHVectors.nruns(e1) == n
+            end
         end
-    end
-    @testset "nfree" begin
-        @test nfree(WAH_FULL_ZEROS) == 0
-        @test nfree(WAH_FULL_ONES) == 0
+        @testset "nfree" begin
+            @test WAHVectors.nfree(WAHVectors.WAH_FULL_ZEROS) == 0
+            @test WAHVectors.nfree(WAHVectors.WAH_FULL_ONES) == 0
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
 
-            @test nfree(e0) == (WAH_MAX_NWORDS - n)
-            @test nfree(e1) == (WAH_MAX_NWORDS - n)
+                @test WAHVectors.nfree(e0) == (WAHVectors.WAH_MAX_NWORDS - n)
+                @test WAHVectors.nfree(e1) == (WAHVectors.WAH_MAX_NWORDS - n)
+            end
         end
-    end
-    @testset "isfull" begin
-        @test isfull(WAH_FULL_ZEROS)
-        @test isfull(WAH_FULL_ONES)
+        @testset "isfull" begin
+            @test WAHVectors.isfull(WAHVectors.WAH_FULL_ZEROS)
+            @test WAHVectors.isfull(WAHVectors.WAH_FULL_ONES)
 
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            e0 = WAHElement(0x00000000, n)
-            e1 = WAHElement(0x00000001, n)
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e0 = WAHVectors.WAHElement(0x00000000, n)
+                e1 = WAHVectors.WAHElement(0x00000001, n)
 
-            @test isfull(e0) == (WAH_MAX_NWORDS == n)
-            @test isfull(e1) == (WAH_MAX_NWORDS == n)
+                @test WAHVectors.isfull(e0) == (WAHVectors.WAH_MAX_NWORDS == n)
+                @test WAHVectors.isfull(e1) == (WAHVectors.WAH_MAX_NWORDS == n)
+            end
         end
-    end
-    @testset "hasroom" begin
-        for i in 1:100
-            n = rand(0x00000001:WAH_MAX_NWORDS)
-            s = rand(0x00000001:WAH_MAX_NWORDS)
-            e = WAHElement(0x00000000, n)
-            @test hasroom(e) == (n < WAH_MAX_NWORDS)
-            @test hasroom(e, s) == (s <= nfree(e))
+        @testset "hasroom" begin
+            for i in 1:100
+                n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                s = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                e = WAHVectors.WAHElement(0x00000000, n)
+                @test WAHVectors.hasroom(e) == (n < WAHVectors.WAH_MAX_NWORDS)
+                @test WAHVectors.hasroom(e, s) == (s <= WAHVectors.nfree(e))
+            end
         end
-    end
-    @testset "fillandmatch" begin
-        for i in 1:100
-            n1 = rand(0x00000001:WAH_MAX_NWORDS)
-            n2 = rand(0x00000001:WAH_MAX_NWORDS)
-            v1 = rand(0x00000000:0x00000001)
-            v2 = rand(0x00000000:0x00000001)
+        @testset "matchingfills" begin
+            for i in 1:100
+                n1 = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                n2 = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
+                v1 = rand(0x00000000:0x00000001)
+                v2 = rand(0x00000000:0x00000001)
 
-            @test fillandmatch(WAHElement(v1, n1), WAHElement(v2, n2)) == (v1 == v2)
+                @test WAHVectors.matchingfills(WAHVectors.WAHElement(v1, n1), WAHVectors.WAHElement(v2, n2)) == (v1 == v2)
+            end
         end
     end
 end
-
-#=
-@testset "WAH Vectors" begin
-
-end
-=#
 
 end
