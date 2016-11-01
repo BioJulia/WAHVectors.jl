@@ -13,21 +13,37 @@ using WAHVectors
                 @test WAHVectors.WAHElement(0x00000001, n) == reinterpret(WAHVectors.WAHElement, 0xC0000000 + n)
             end
         end
+        #=
         @testset "Operators" begin
+
+            # Test the & binary operator.
             @test (WAHVectors.WAH_LITERAL_ONES & 0x00000000) == WAHVectors.WAH_LITERAL_ZEROS
             @test (WAHVectors.WAHElement(0x00000001, UInt32(6)) & 0xFFFFFFFF) == WAHVectors.WAHElement(0x00000001, UInt32(6))
-
+            @test (0xFFFFFFFF & WAHVectors.WAHElement(0x00000001, UInt32(6))) == WAHVectors.WAHElement(0x00000001, UInt32(6))
             for i in 1:100
+
                 n1 = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
                 n2 = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
                 n3 = rand(n1:WAHVectors.WAH_MAX_NWORDS)
-                v = rand(0x00000000:0x00000001)
+                v1 = rand(0x00000000:0x00000001)
+                v2 = rand(0x00000000:0x00000001)
+                e1 = WAHVectors.WAHElement(v1, n1)
+                e2 = WAHVectors.WAHElement(v1, n2)
+                e3 = WAHVectors.WAHElement(v1, n3)
 
-                @test (n1 + WAHVectors.WAHElement(v, n2)) == WAHVectors.WAHElement(v, n1 + n2)
-                @test (WAHVectors.WAHElement(v, n1) + n2) == WAHVectors.WAHElement(v, n1 + n2)
-                @test (WAHVectors.WAHElement(v, n3) - n1) == WAHVectors.WAHElement(v, n3 - n1)
+                @test (n1 + e2) == WAHVectors.WAHElement(v1, n1 + n2)
+                @test (e1 + n2) == WAHVectors.WAHElement(v1, n1 + n2)
+                @test (e3 - n1) == WAHVectors.WAHElement(v1, n3 - n1)
+
+                e4 = WAHVectors.WAHElement(v1, n1)
+                e5 = WAHVectors.WAHElement(v2, n2)
+
+                @test (e1 >= n1) && (e2 >= n2) && (e3 >= n3)
+                @test !(e1 >= n1) && !(e2 >= n2) && !(e3 >= n3)
+                @test e4
             end
         end
+        =#
         @testset "iscompressed" begin
             @test !WAHVectors.isruns(WAHVectors.WAH_LITERAL_ZEROS)
             @test !WAHVectors.isruns(WAHVectors.WAH_LITERAL_ONES)

@@ -41,16 +41,16 @@ internal use only.
     if element == WAH_LITERAL_ZEROS
         if tail == WAH_LITERAL_ZEROS
             vec[endof(vec)] = WAHElement(0x80000002)
-        elseif isruns(tail) && (tail < 0xBFFFFFFF)
-            vec[endof(vec)] += UInt32(1)
+        elseif isruns(tail) && (UInt32(tail) < 0xBFFFFFFF)
+            vec[endof(vec)] = increment_nruns_unsafe(tail)
         else
             push!(vec, element)
         end
     elseif element == WAH_LITERAL_ONES
         if tail == WAH_LITERAL_ONES
             vec[endof(vec)] = WAHElement(0xC0000002)
-        elseif is_ones_runs(tail) && (tail < 0xFFFFFFFF)
-            vec[endof(vec)] += UInt32(1)
+        elseif is_ones_runs(tail) && (UInt32(tail) < 0xFFFFFFFF)
+            vec[endof(vec)] = increment_nruns_unsafe(tail)
         else
             push!(vec, element)
         end

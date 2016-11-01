@@ -26,28 +26,28 @@ const WAH_MAX_NWORDS = 0x3FFFFFFF
 # Basic general operations on WAHElements
 # ---------------------------------------
 
-Base.:&(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) & y)
-Base.:&(x::UInt32, y::WAHElement) = WAHElement(x & UInt32(y))
+#Base.:&(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) & y)
+#Base.:&(x::UInt32, y::WAHElement) = WAHElement(x & UInt32(y))
 
-Base.:+(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
-Base.:+(x::UInt32, y::WAHElement) = y + x
+#Base.:+(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
+#Base.:+(x::UInt32, y::WAHElement) = y + x
 
-Base.:-(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) - y)
+#Base.:-(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) - y)
 
-Base.:>=(x::WAHElement, y::UInt32) = UInt32(x) >= y
-Base.:>=(x::UInt32, y::WAHElement) = x >= UInt32(y)
-Base.:<=(x::WAHElement, y::UInt32) = UInt32(x) <= y
-Base.:<=(x::UInt32, y::WAHElement) = x <= UInt32(y)
+#Base.:>=(x::WAHElement, y::UInt32) = UInt32(x) >= y
+#Base.:>=(x::UInt32, y::WAHElement) = x >= UInt32(y)
+#Base.:<=(x::WAHElement, y::UInt32) = UInt32(x) <= y
+#Base.:<=(x::UInt32, y::WAHElement) = x <= UInt32(y)
 
-Base.isless(x::WAHElement, y::UInt32) = isless(UInt32(x), y)
-Base.isless(x::UInt32, y::WAHElement) = isless(x, UInt32(y))
+#Base.isless(x::WAHElement, y::UInt32) = isless(UInt32(x), y)
+#Base.isless(x::UInt32, y::WAHElement) = isless(x, UInt32(y))
 
-Base.:(==)(x::WAHElement, y::UInt32) = UInt32(x) == y
-Base.:(==)(x::UInt32, y::WAHElement) = x == UInt32(y)
+#Base.:(==)(x::WAHElement, y::UInt32) = UInt32(x) == y
+#Base.:(==)(x::UInt32, y::WAHElement) = x == UInt32(y)
 Base.:(==)(x::WAHElement, y::WAHElement) = UInt32(x) == UInt32(y)
 
-# Basic operations that are specific to WAHElements
-#--------------------------------------------------
+# Basic operations
+#-----------------
 
 """
     isruns(x)
@@ -55,7 +55,7 @@ Base.:(==)(x::WAHElement, y::WAHElement) = UInt32(x) == UInt32(y)
 Return `true` if the element of the WAH compressed bit array `x`
 represents a compressed run of words. Otherwise return `false`.
 """
-isruns(x::WAHElement) = x > 0x7FFFFFFF
+isruns(x::WAHElement) = UInt32(x) >= 0x80000000
 
 """
     isliteral(x)
@@ -64,21 +64,21 @@ Return `true` if the element of the WAH compressed bit array `x`
 represents a literal word rather than a compressed run of words, in
 which case this function will return `false`.
 """
-isliteral(x::WAHElement) = x < 0x80000000
+isliteral(x::WAHElement) = UInt32(x) < 0x80000000
 
 """
     is_zeros_runs(x)
 
 Return `true` if the WAH Element represents a compressed run of all zero words.
 """
-is_zeros_runs(x::WAHElement) = isruns(x) && (x < 0xC0000000)
+is_zeros_runs(x::WAHElement) = isruns(x) && (UInt32(x) < 0xC0000000)
 
 """
     is_ones_runs(x)
 
 Return `true` if the WAH Element represents a compressed run of all one words.
 """
-is_ones_runs(x::WAHElement) = x >= 0xC0000000
+is_ones_runs(x::WAHElement) = UInt32(x) >= 0xC0000000
 
 """
     nwords(x)
@@ -136,3 +136,6 @@ matchingfills(x::WAHElement, y::WAHElement) = (UInt32(x) >> 30) == (UInt32(y) >>
 
 hasroom(x::WAHElement) = nruns(x) < WAH_MAX_NWORDS
 hasroom(x::WAHElement, required::UInt32) = (nruns(x) + required) < WAH_MAX_NWORDS
+
+increment_nruns_unsafe(x::WAHElement) = WAHElement(UInt32(x) + 0x00000001)
+increment_nruns_unsafe(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
