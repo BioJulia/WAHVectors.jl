@@ -44,7 +44,7 @@ using WAHVectors
             end
         end
         =#
-        @testset "iscompressed" begin
+        @testset "isruns" begin
             @test !WAHVectors.isruns(WAHVectors.WAH_LITERAL_ZEROS)
             @test !WAHVectors.isruns(WAHVectors.WAH_LITERAL_ONES)
             @test WAHVectors.isruns(WAHVectors.WAH_FULL_ZEROS)
