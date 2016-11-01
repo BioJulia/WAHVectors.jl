@@ -17,11 +17,13 @@ type WAHCursor
     nwords::UInt32
 
     function WAHCursor(vec::WAHVector)
-        return new(x, length(x.data), 1, 0x00000000, false, 0x00000000, 0x00000000)
+        x = new(vec, length(vec.data), 1, 0x00000000, false, 0x00000000, 0x00000000)
+        decode!(x)
+        return x
     end
 end
 
-@inline function move!(x::WAHCursor)
+@inline function decode!(x::WAHCursor)
     currentWord = x.wahvec.data[x.word_i]
     if isruns(currentWord)
         isones = is_ones_runs(currentWord)
@@ -39,8 +41,8 @@ end
 @inline function check_to_move!(x::WAHCursor)
     if x.nwords == 0x00000000
         x.word_i += 1
-        if x.word_i < x.len
-            move!(x)
+        if x.word_i <= x.len
+            decode!(x)
         end
     end
 end

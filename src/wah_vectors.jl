@@ -34,6 +34,18 @@ end
 # Exported operations
 # -------------------
 
+function Base.convert(::Type{Vector{UInt32}}, vec::WAHVector)
+    result = Vector{UInt32}(vec.nwords)
+    result_i = 1
+    for element in vec
+        for _ in nwords(element)
+            result[result_i] = fill(element)
+            result_i += 1
+        end
+    end
+    return result
+end
+
 @inline function Base.push!(vec::WAHVector, element::WAHElement)
     if length(vec.data) > 0
         append!(vec, element)
@@ -47,8 +59,8 @@ function Base.:&(x::WAHVector, y::WAHVector)
     xc = WAHCursor(x)
     yc = WAHCursor(y)
     result = WAHVector()
-    move!(xcursor)
-    move!(ycursor)
+    #decode!(xcursor)
+    #decode!(ycursor)
     push!(result.data, xc & yc)
     while (xc.word_i <= xc.len) && (yc.word_i <= yc.len)
         check_to_move!(xc)

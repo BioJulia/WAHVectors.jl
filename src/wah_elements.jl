@@ -121,3 +121,7 @@ hasroom(x::WAHElement, required::UInt32) = (nruns(x) + required) < WAH_MAX_NWORD
 
 increment_nruns_unsafe(x::WAHElement) = WAHElement(UInt32(x) + 0x00000001)
 increment_nruns_unsafe(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
+
+@inline function fill(x::WAHElement)
+    return ifelse(isruns(x), ifelse(is_ones_runs, 0x7FFFFFFF, 0x00000000), x)
+end
