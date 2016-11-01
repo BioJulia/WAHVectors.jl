@@ -26,24 +26,6 @@ const WAH_MAX_NWORDS = 0x3FFFFFFF
 # Basic general operations on WAHElements
 # ---------------------------------------
 
-#Base.:&(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) & y)
-#Base.:&(x::UInt32, y::WAHElement) = WAHElement(x & UInt32(y))
-
-#Base.:+(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
-#Base.:+(x::UInt32, y::WAHElement) = y + x
-
-#Base.:-(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) - y)
-
-#Base.:>=(x::WAHElement, y::UInt32) = UInt32(x) >= y
-#Base.:>=(x::UInt32, y::WAHElement) = x >= UInt32(y)
-#Base.:<=(x::WAHElement, y::UInt32) = UInt32(x) <= y
-#Base.:<=(x::UInt32, y::WAHElement) = x <= UInt32(y)
-
-#Base.isless(x::WAHElement, y::UInt32) = isless(UInt32(x), y)
-#Base.isless(x::UInt32, y::WAHElement) = isless(x, UInt32(y))
-
-#Base.:(==)(x::WAHElement, y::UInt32) = UInt32(x) == y
-#Base.:(==)(x::UInt32, y::WAHElement) = x == UInt32(y)
 Base.:(==)(x::WAHElement, y::WAHElement) = UInt32(x) == UInt32(y)
 
 # Basic operations

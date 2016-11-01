@@ -21,7 +21,7 @@ type WAHCursor
     end
 end
 
-@inline function decode!(x::WAHCursor)
+@inline function move!(x::WAHCursor)
     currentWord = x.wahvec.data[x.word_i]
     if isruns(currentWord)
         isones = is_ones_runs(currentWord)
@@ -40,7 +40,7 @@ end
     if x.nwords == 0x00000000
         x.word_i += 1
         if x.word_i < x.len
-            decode!(x)
+            move!(x)
         end
     end
 end

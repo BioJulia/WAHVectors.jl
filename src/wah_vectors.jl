@@ -47,14 +47,15 @@ function Base.:&(x::WAHVector, y::WAHVector)
     xc = WAHCursor(x)
     yc = WAHCursor(y)
     result = WAHVector()
-    decode!(xcursor)
-    decode!(ycursor)
+    move!(xcursor)
+    move!(ycursor)
     push!(result.data, xc & yc)
     while (xc.word_i <= xc.len) && (yc.word_i <= yc.len)
         check_to_move!(xc)
         check_to_move!(yc)
         append!(result, xc & yc)
     end
+    return result
 end
 
 # Non-Exported operations
