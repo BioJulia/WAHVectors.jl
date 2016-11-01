@@ -29,13 +29,11 @@ const WAH_MAX_NWORDS = 0x3FFFFFFF
 Base.:&(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) & y)
 Base.:&(x::UInt32, y::WAHElement) = WAHElement(x & UInt32(y))
 
-Base.:+(x::WAHElement, y::WAHElement) = WAHElement(UInt32(x) + UInt32(y))
 Base.:+(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
 Base.:+(x::UInt32, y::WAHElement) = y + x
 
 Base.:-(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) - y)
 Base.:-(x::UInt32, y::WAHElement) = WAHElement(x - UInt32(y))
-Base.:-(x::WAHElement, y::WAHElement) = WAHElement(UInt32(x) - UInt32(y))
 
 Base.:>=(x::WAHElement, y::UInt32) = UInt32(x) >= y
 Base.:>=(x::UInt32, y::WAHElement) = x >= UInt32(y)
@@ -135,7 +133,7 @@ than a number of compressed words.
 """
 isfull(x::WAHElement) = (x == WAH_FULL_ZEROS) || (x == WAH_FULL_ONES)
 
-fillandmatch(x::WAHElement, y::WAHElement) = (x >> 30) == (y >> 30)
+matchingfills(x::WAHElement, y::WAHElement) = (x >> 30) == (y >> 30)
 
 hasroom(x::WAHElement) = nruns(x) < WAH_MAX_NWORDS
 hasroom(x::WAHElement, required::UInt32) = (nruns(x) + required) < WAH_MAX_NWORDS

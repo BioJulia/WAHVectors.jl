@@ -16,12 +16,18 @@ using WAHVectors
         @test (WAH_LITERAL_ONES & 0x00000000) == WAH_LITERAL_ZEROS
         @test (WAHElement(0x00000001, UInt32(6)) & 0xFFFFFFFF) == WAHElement(0x00000001, 6)
 
-        @test (UInt32(6) + WAHElement(0x00000001, UInt32(6))) == WAHElement(0x00000001, UInt32(12))
-        @test (WAHElement(0x00000001, UInt32(6)) + UInt32(6)) == WAHElement(0x00000001, UInt32(12))
-        @test (WAHElement(0x00000001, UInt32(6)) + WAHElement(0x00000001, UInt32(6))) == WAHElement(0x00000001, UInt32(12))
-        @test (WAHElement(0x00000000, UInt32(6)) + WAHElement(0x00000001, UInt32(6))) == WAHElement(0x00000001, UInt32(12))
+        for i in 1:100
+            n1 = rand(0x00000001:WAH_MAX_NWORDS)
+            n2 = rand(0x00000001:WAH_MAX_NWORDS)
+            n3 = rand(n1:WAH_MAX_NWORDS)
+            v = rand(0x00000000:0x00000001)
 
-        @test (WAHElement(0x00000001, UInt32(12)) - WAHElement(0x00000001, UInt32(2))) == WAHElement(0x00000001, UInt32(10))
+            @test (n1 + WAHElement(v, n2)) == WAHElement(v, n1 + n2)
+            @test (WAHElement(v, n1) + n2) == WAHElement(v, n1 + n2)
+
+            @test (n3 - WAHElement(v, n1)) == WAHElement(v, n3 - n1)
+            @test (WAHElement(v, n3) - n1) == WAHElement(v, n3 - n1)
+        end
     end
     @testset "iscompressed" begin
         @test !isruns(WAH_LITERAL_ZEROS)

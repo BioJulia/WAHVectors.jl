@@ -71,16 +71,14 @@ That the value you are appending IS in fact a WAHElement for which the
 internal use only.
 """
 @inline function append_run!(vec::Vector{WAHElement}, element::WAHElement)
-    tail = vec[endof(vec)]
-    fillbit = runval(element)
-    fillsize = ncomp(element)
-    if ((tail >> 30) == (0x00000002 + fillbit)) && hasroom(tail, fillsize)
-        vec[endof(vec)] = tail + element
+    fillsize = nruns(element)
+    if matchingfills(tail, element) && hasroom(tail, fillsize)
+        vec[endof(vec)] += fillsize
     else
         if fillsize > 0x00000001
             newelem = element
         else
-            newelem = ifelse(fillbit == 0x00000001, WAH_LITERAL_ONES, WAH_LITERAL_ZEROS)
+            newelem = ifelse(is_ones_runs(element), WAH_LITERAL_ONES, WAH_LITERAL_ZEROS)
         end
         push!(vec, newelem)
     end
@@ -89,16 +87,16 @@ end
 @inline function append_run_slow!(vec::Vector{WAHElement}, element::WAHElement)
     tail = vec[endof(vec)]
     # If the tail and the element to append are runs with the same fill value.
-    if fillandmatch(element, tail)
+    if matchingfills(element, tail)
         space_required = nruns(element)
         space_avail = nfree(tail)
         # If tail has room, simply up the runcount.
         if (space_avail >= space_required)
-            vec[endof(vec)] = tail + space_required
+            vec[endof(vec)] += space_required
         else
             # If the tail has room, but not all room needed. Fill it, and add a
             # new element containing the remainder.
-            vec[endof(vec)] = tail + space_avail
+            vec[endof(vec)] += space_avail
             element -= space_avail
             # If the remainder is only one, thenm make the element a literal,
             # rather than a run.
