@@ -26,8 +26,6 @@ const WAH_MAX_NWORDS = 0x3FFFFFFF
 # Basic general operations on WAHElements
 # ---------------------------------------
 
-Base.bits(x::WAHElement) = bits(UInt32(x))
-
 Base.:&(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) & y)
 Base.:&(x::UInt32, y::WAHElement) = WAHElement(x & UInt32(y))
 

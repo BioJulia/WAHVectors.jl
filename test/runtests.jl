@@ -12,6 +12,17 @@ using WAHVectors
             @test WAHElement(0x00000001, n) == reinterpret(WAHElement, 0xC0000000 + n)
         end
     end
+    @testset "Operators" begin
+        @test (WAH_LITERAL_ONES & 0x00000000) == WAH_LITERAL_ZEROS
+        @test (WAHElement(0x00000001, UInt32(6)) & 0xFFFFFFFF) == WAHElement(0x00000001, 6)
+
+        @test (UInt32(6) + WAHElement(0x00000001, UInt32(6))) == WAHElement(0x00000001, UInt32(12))
+        @test (WAHElement(0x00000001, UInt32(6)) + UInt32(6)) == WAHElement(0x00000001, UInt32(12))
+        @test (WAHElement(0x00000001, UInt32(6)) + WAHElement(0x00000001, UInt32(6))) == WAHElement(0x00000001, UInt32(12))
+        @test (WAHElement(0x00000000, UInt32(6)) + WAHElement(0x00000001, UInt32(6))) == WAHElement(0x00000001, UInt32(12))
+
+        @test (WAHElement(0x00000001, UInt32(12)) - WAHElement(0x00000001, UInt32(2))) == WAHElement(0x00000001, UInt32(10))
+    end
     @testset "iscompressed" begin
         @test !isruns(WAH_LITERAL_ZEROS)
         @test !isruns(WAH_LITERAL_ONES)
@@ -129,6 +140,25 @@ using WAHVectors
 
             @test isfull(e0) == (WAH_MAX_NWORDS == n)
             @test isfull(e1) == (WAH_MAX_NWORDS == n)
+        end
+    end
+    @testset "hasroom" begin
+        for i in 1:100
+            n = rand(0x00000001:WAH_MAX_NWORDS)
+            s = rand(0x00000001:WAH_MAX_NWORDS)
+            e = WAHElement(0x00000000, n)
+            @test hasroom(e) == (n < WAH_MAX_NWORDS)
+            @test hasroom(e, s) == (s <= nfree(e))
+        end
+    end
+    @testset "fillandmatch" begin
+        for i in 1:100
+            n1 = rand(0x00000001:WAH_MAX_NWORDS)
+            n2 = rand(0x00000001:WAH_MAX_NWORDS)
+            v1 = rand(0x00000000:0x00000001)
+            v2 = rand(0x00000000:0x00000001)
+
+            @test fillandmatch(WAHElement(v1, n1), WAHElement(v2, n2)) == (v1 == v2)
         end
     end
 end
