@@ -5,7 +5,7 @@ site_author: The BioJulia Organisation
 site_url: https://biojulia.github.io/WAHVectors.jl/
 
 # Repository
-repo_url:  https://github.com/BioJulia/WAHVectors.jl
+repo_url: https://github.com/BioJulia/WAHVectors.jl
 
 # Copyright
 copyright: Copyright (c) 2016 The BioJulia Organisation
