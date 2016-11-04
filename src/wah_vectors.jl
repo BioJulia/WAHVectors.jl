@@ -65,72 +65,56 @@ const ALL_ZEROS = 0x00000000
     return idx, leftover_bits, leftover_val
 end
 
+
+@inline function append_literal!(vec::Vector{UInt32}, element::WAHElement,
+                                 idx::Int64, tail_space::Int64)
+    element = UInt32(element)
+    # We need to use the current element to fill any bits that are unused in
+    # the vector of UInt32.
+    jump = UInt64(32) - tail_space
+    val = element >> jump
+    vec[idx] |= val
+    # Now we need to get the remainder and stick it on the end as the new tail.
+    idx += UInt32(1)
+    vec[idx] = element << jump          ### THIS IS WRONG, IT SHOULD BE 32 - jump??!
+    return idx, UInt64(32) - jump
+end
+
+@inline function append_run!(vec::Vector{UInt32}, element::WAHElement,
+                             idx::UInt64, tail_space::UInt64)
+    # We need to use the current element to fill any bits that are unused in the
+    # tail of vector UInt32, and then go to the next element.
+    val = ifelse(is_ones_runs(element), ALL_ONES >> (32 - tail_space), ALL_ZEROS)
+    vec[idx] |= val
+    idx += 1
+    # Next we calculate how many full elements we need to add.
+    nb = UInt64(nbits(element)) - tail_space
+    nout = UInt64(floor(nb * I32))
+    val = ifelse(is_ones_runs(element), ALL_ONES, ALL_ZEROS)
+    last = (idx + nout) - UInt64(1)
+    vec[idx:last] = val
+    # Now we've added the full elements, we need to add a tail and fill it
+    # with what is left.
+    idx = last + UInt64(1)
+    tail_space = nb & UInt64(31) # Quick modulus 32.
+    vec[idx] = ifelse(is_ones_runs(element), ALL_ONES << (32 - tail_space), ALL_ZEROS)
+
+    return idx,
+end
+
+
 function Base.convert(::Type{Vector{UInt32}}, vec::WAHVector)
     result = Vector{UInt32}(vec.nwords)
     result_idx = UInt64(1)
-
-    result_idx, rem_bits, rem_val = set_ints!(result, result_idx, vec.data[1])
-
-    for element in vec.data[2:endof(vec.data)]
-
-        #if rem_bits < 0
-            # IF rem_bits < 0, remember that you have no rem_val to deal with.
-            if isruns(element)
-
-                # Put the mising bit in the remaining space.
-                val = ifelse(is_ones_runs(element), ALL_ONES >> (32 - rem_bits), ALL_ZEROS)
-                result[result_idx] |= val
-                # Once result_idx is full we go to the next element.
-                result_idx += 1
-
-                # Calculating how many elements we need to fill.
-                nb = Int64(nbits(element)) - rem_bits
-                nout = UInt64(floor(nb * I32))
-
-                val = ifelse(is_ones_runs(element), ALL_ONES, ALL_ZEROS)
-                last = (result_idx + nout) - UInt64(1)
-                result[result_idx:last] = val
-                result_idx = last + UInt64(1)
-
-                # Get leftover values with modulus 32.
-                rem_bits = Int64(nb & 31) # Quick modulus of nb mod 32.
-                result[result_idx] =
-                    ifelse(is_ones_runs(element), ALL_ONES << (32 - rem_bits), ALL_ZEROS)
-
-
-            else
-
-                ielement = UInt32(element) # Element is non-compressed 31 bit literal.
-                jump = 32 - rem_bits
-                val = ielement >> jump
-                result[result_idx] |= val
-                result_idx += 1
-                result[result_idx] = ielement << jump
-
-                # How many elements we have left.
-                rem_bits = 32 - jump
-
-            end
-        #else
-
-        #end
-
-
-
-
+    rem_bits = UInt64(32)
+    for i in 2:endof(vec.data)
+        element = vec.data[i]
+        if isruns(element)
+            result_idx, rem_bits = append_runs!(result, element, result_idx, rem_bits)
+        else
+            result_idx, rem_bits = append_literal!(result, element, result_idx, rem_bits)
+        end
     end
-
-
-
-
-
-
-
-
-
-
-
-
     return result
 end
 
