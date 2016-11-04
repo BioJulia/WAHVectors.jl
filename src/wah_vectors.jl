@@ -37,47 +37,26 @@ end
 nwords(vec::WAHVector) = vec.nwords
 nbits(vec::WAHVector) = 31 * nwords(vec)
 
-const I32 = 1.0/32.0
+const I32 = 1.0 / 32.0
 const ALL_ONES = 0xFFFFFFFF
 const ALL_ZEROS = 0x00000000
 
-@inline function set_ints!(vec::Vector{UInt32}, idx::UInt64, element::WAHElement)
-    if isruns(element)
-        # Work out the number of integers required.
-        nb = Int64(nbits(element))
-        nout = UInt64(floor(nb * I32))
-        val = ifelse(is_ones_runs(element), ALL_ONES, ALL_ZEROS)
-        last = (idx + nout) - UInt64(1)
-        result[idx:last] = val
-        idx = last
-
-        leftover_bits = Int64(nb & 31) # Quick modulus of nb mod 32.
-        leftover_val = val
-
-    else
-        vec[idx] = UInt32(element)
-        # Still 1 bit free in result.
-        # We return the same index as the last bit needs to be filled
-        # on the next iteration.
-        leftover_bits = -1
-        leftover_val = ALL_ZEROS
-    end
-    return idx, leftover_bits, leftover_val
-end
-
-
 @inline function append_literal!(vec::Vector{UInt32}, element::WAHElement,
-                                 idx::Int64, tail_space::Int64)
+                                 idx::UInt64, tail_space::UInt64)
     element = UInt32(element)
+
     # We need to use the current element to fill any bits that are unused in
     # the vector of UInt32.
-    jump = UInt64(32) - tail_space
-    val = element >> jump
+    jump = (32 - tail_space) # -1??
+    # If tail_space = 0, val will be 0x00000000.
+    val = element >> jump - 1 # jump - 1 ??
     vec[idx] |= val
+
     # Now we need to get the remainder and stick it on the end as the new tail.
-    idx += UInt32(1)
-    vec[idx] = element << jump          ### THIS IS WRONG, IT SHOULD BE 32 - jump??!
-    return idx, UInt64(32) - jump
+    idx += UInt64(1)
+    vec[idx] = element << tail_space + 1     #jump      ### 32 - jump? == tail_space? tail_space + 1?
+
+    return idx, (tail_space + 1) & UInt64(31) # Quick modulus solution???
 end
 
 @inline function append_run!(vec::Vector{UInt32}, element::WAHElement,
@@ -107,8 +86,7 @@ function Base.convert(::Type{Vector{UInt32}}, vec::WAHVector)
     result = Vector{UInt32}(vec.nwords)
     result_idx = UInt64(1)
     rem_bits = UInt64(32)
-    for i in 2:endof(vec.data)
-        element = vec.data[i]
+    for element in vec.data
         if isruns(element)
             result_idx, rem_bits = append_runs!(result, element, result_idx, rem_bits)
         else
