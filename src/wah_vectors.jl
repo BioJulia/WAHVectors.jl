@@ -43,20 +43,40 @@ const ALL_ZEROS = 0x00000000
 
 @inline function append_literal!(vec::Vector{UInt32}, element::WAHElement,
                                  idx::UInt64, tail_space::UInt64)
+
     element = UInt32(element)
 
-    # We need to use the current element to fill any bits that are unused in
-    # the vector of UInt32.
-    jump = (32 - tail_space) # -1??
-    # If tail_space = 0, val will be 0x00000000.
-    val = element >> jump - 1 # jump - 1 ??
-    vec[idx] |= val
+    #idx, tail_space = ifelse(tail_space == UInt64(0),
+    #                            (idx + UInt64(1), UInt64(32)),
+    #                            (idx, tail_space))
 
-    # Now we need to get the remainder and stick it on the end as the new tail.
-    idx += UInt64(1)
-    vec[idx] = element << tail_space + 1     #jump      ### 32 - jump? == tail_space? tail_space + 1?
+    # Assume tail_space can never be 0.
+    # When we fill the tail, with a 31 bit literal, there are 3 possible cases:
+    #
+    # 1). We add 31 bits to the tail, and there is still room in the tail for
+    # 1 more bit (tail_space == 32).
+    #
+    # 2). We add 31 bits to the tail, and there is no room in the tail for any
+    # more bits (tail_space == 31).
+    #
+    # 3). We add as many bits as possible to the tail, but still have some to
+    # carry to the new tail (1 <= tail_space < 31).
 
-    return idx, (tail_space + 1) & UInt64(31) # Quick modulus solution???
+    # Fill current tail:
+    # Consider an example literal of 0x7FFFFFFF,
+    # If case 1, value will be 0xfffffffe.
+    # If case 2, value will be 0x7FFFFFFF.
+    # If case 3, value will be whatever fits in the remaining tail_space.
+    vec[idx] |= (element >> (UInt64(32) - tail_space - UInt64(1)))
+
+    # Fill next tail, if applicable:
+    # If case 1, idx will not increase, `element << (tail_space + 1)` will be 0.
+    # If case 2, idx will increase by 1, `element << (tail_space + 1)` will be 0.
+    # If case 3, idx will increase by 1, `element << (tail_space + 1)` will not be 0.
+    idx = ifelse(tail_space == UInt64(32), idx, idx + UInt64(1))
+    vec[idx] |= (element << (tail_space + 1))
+
+    return idx, ifelse(tail_space == UInt64(32), UInt64(1), tail_space + UInt64(1))
 end
 
 @inline function append_run!(vec::Vector{UInt32}, element::WAHElement,
@@ -75,7 +95,7 @@ end
     # Now we've added the full elements, we need to add a tail and fill it
     # with what is left.
     idx = last + UInt64(1)
-    tail_space = nb & UInt64(31) # Quick modulus 32.
+    tail_space = nb #& UInt64(31) # Quick modulus 32.
     vec[idx] = ifelse(is_ones_runs(element), ALL_ONES << (32 - tail_space), ALL_ZEROS)
 
     return idx,
@@ -83,7 +103,7 @@ end
 
 
 function Base.convert(::Type{Vector{UInt32}}, vec::WAHVector)
-    result = Vector{UInt32}(vec.nwords)
+    result = zeros(UInt32, vec.nwords)
     result_idx = UInt64(1)
     rem_bits = UInt64(32)
     for element in vec.data
