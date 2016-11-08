@@ -133,4 +133,4 @@ increment_nruns_unsafe(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
     return ifelse(isruns(x), ifelse(is_ones_runs(x), 0x7FFFFFFF, 0x00000000), UInt32(x))
 end
 
-nbits(x::WAHElement) = 31 * nwords(x)
+nbits(x::WAHElement) = UInt64(31) * UInt64(nwords(x))

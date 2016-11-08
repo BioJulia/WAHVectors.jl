@@ -42,13 +42,9 @@ const ALL_ONES = 0xFFFFFFFF
 const ALL_ZEROS = 0x00000000
 
 @inline function append_literal!(vec::Vector{UInt32}, element::WAHElement,
-                                 idx::UInt64, tail_space::UInt64)
+                                 idx::UInt64, tailspace::UInt64)
 
     element = UInt32(element)
-
-    #idx, tail_space = ifelse(tail_space == UInt64(0),
-    #                            (idx + UInt64(1), UInt64(32)),
-    #                            (idx, tail_space))
 
     # Assume tail_space can never be 0.
     # When we fill the tail, with a 31 bit literal, there are 3 possible cases:
@@ -67,50 +63,64 @@ const ALL_ZEROS = 0x00000000
     # If case 1, value will be 0xfffffffe.
     # If case 2, value will be 0x7FFFFFFF.
     # If case 3, value will be whatever fits in the remaining tail_space.
-    vec[idx] |= (element >> (UInt64(32) - tail_space - UInt64(1)))
+    vec[idx] |= (element >> (UInt64(32) - tailspace - UInt64(1)))
 
     # Fill next tail, if applicable:
     # If case 1, idx will not increase, `element << (tail_space + 1)` will be 0.
     # If case 2, idx will increase by 1, `element << (tail_space + 1)` will be 0.
     # If case 3, idx will increase by 1, `element << (tail_space + 1)` will not be 0.
-    idx = ifelse(tail_space == UInt64(32), idx, idx + UInt64(1))
-    vec[idx] |= (element << (tail_space + 1))
+    idx = ifelse(tailspace == UInt64(32), idx, idx + UInt64(1))
+    vec[idx] |= (element << (tailspace + 1))
 
-    return idx, ifelse(tail_space == UInt64(32), UInt64(1), tail_space + UInt64(1))
+    return idx, ifelse(tailspace == UInt64(32), UInt64(1), tailspace + UInt64(1))
 end
 
 @inline function append_run!(vec::Vector{UInt32}, element::WAHElement,
-                             idx::UInt64, tail_space::UInt64)
-    # We need to use the current element to fill any bits that are unused in the
-    # tail of vector UInt32, and then go to the next element.
-    val = ifelse(is_ones_runs(element), ALL_ONES >> (32 - tail_space), ALL_ZEROS)
-    vec[idx] |= val
+                             idx::UInt64, tailspace::UInt64)
+
+    # `nb`: How many bits we have to add to the vector.
+    # We know at the very least this value is 62 bits, if you make the
+    # assumption that 1 word run elements are not possible.
+
+    # Note, must use UInt64 as the max number of bits a WAH run element can contain
+    # is 33285996513 or 0x7BFFFFFE1 which needs a 64 bit integer to represent it.
+    nb = UInt64(31) * UInt64(nruns(element))
+    bitval = ifelse(is_ones_runs(element), ALL_ONES, ALL_ZEROS)
+
+    # Fill the current tail with bits, calculate how many bits we now have, and
+    # increase idx.
+    vec[idx] |= (bitval >> (32 - tailspace))
+    nb -= tailspace
     idx += 1
-    # Next we calculate how many full elements we need to add.
-    nb = UInt64(nbits(element)) - tail_space
-    nout = UInt64(floor(nb * I32))
-    val = ifelse(is_ones_runs(element), ALL_ONES, ALL_ZEROS)
-    last = (idx + nout) - UInt64(1)
-    vec[idx:last] = val
+
+    # Now we calculate how many full _32 BIT_ elements we need to add, and how
+    # many bits will be left.
+    nfull = UInt64(floor(nb * I32))
+    nb = nb & UInt64(31)                 # Fast modulus.
+
+    # Now we actually add the full elements.
+    last = (idx + nfull) - UInt64(1)
+    vec[idx:last] = bitval
+
     # Now we've added the full elements, we need to add a tail and fill it
     # with what is left.
     idx = last + UInt64(1)
-    tail_space = nb #& UInt64(31) # Quick modulus 32.
-    vec[idx] = ifelse(is_ones_runs(element), ALL_ONES << (32 - tail_space), ALL_ZEROS)
+    newtail = 32 - nb
+    vec[idx] = (bitval << newtail)
 
-    return idx,
+    return idx, newtail
 end
 
 
 function Base.convert(::Type{Vector{UInt32}}, vec::WAHVector)
     result = zeros(UInt32, vec.nwords)
-    result_idx = UInt64(1)
-    rem_bits = UInt64(32)
+    ridx = UInt64(1)
+    freebits = UInt64(32)
     for element in vec.data
         if isruns(element)
-            result_idx, rem_bits = append_runs!(result, element, result_idx, rem_bits)
+            ridx, freebits = append_runs!(result, element, ridx, freebits)
         else
-            result_idx, rem_bits = append_literal!(result, element, result_idx, rem_bits)
+            ridx, freebits = append_literal!(result, element, ridx, freebits)
         end
     end
     return result
