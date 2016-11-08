@@ -161,14 +161,12 @@ using WAHVectors
                 @test WAHVectors.increment_nruns_unsafe(e, i) == WAHVectors.WAHElement(UInt32(e) + i)
             end
         end
-        @testset "fill" begin
+        @testset "runfill" begin
             for _ in 1:100
                 n = rand(0x00000001:WAHVectors.WAH_MAX_NWORDS)
-                n2 = rand(0x00000000:0x7FFFFFFF)
                 v = rand(0x00000000:0x00000001)
                 e1 = WAHVectors.WAHElement(v, n)
-                e2 = WAHVectors.WAHElement(rand(0x00000000))
-                @test WAHVectors.fill(e1) == ifelse(v == 0x00000001, 0x7FFFFFFF, 0x00000000)
+                @test WAHVectors.runfill(e1) == ifelse(v == 0x00000001, 0x7FFFFFFF, 0x00000000)
             end
         end
     end
