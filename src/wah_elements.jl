@@ -134,3 +134,11 @@ increment_nruns_unsafe(x::WAHElement, y::UInt32) = WAHElement(UInt32(x) + y)
 end
 
 nbits(x::WAHElement) = UInt64(31) * UInt64(nwords(x))
+
+function Base.show(io::IO, element::WAHElement)
+    if isruns(element)
+        println(io, "$(nruns(element)) compressed $(runfill(element)) words.")
+    else
+        println(io, "1 literal $(runfill(element)).")
+    end
+end
