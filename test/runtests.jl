@@ -4,6 +4,27 @@ using Base.Test
 
 using WAHVectors
 
+function make_random_bitvector(n0, nF, nX, nshuffle)
+    v = Vector{UInt32}(n0 + nF + nX)
+    aR = rand(0x00000000:0xFFFFFFFF, nX)
+    i = 1
+    for _ in 1:n0
+        v[i] = 0x00000000
+        i += 1
+    end
+    for _ in 1:nF
+        v[i] = 0xFFFFFFFF
+        i += 1
+    end
+    for j in 1:nX
+        v[i] = aR[j]
+    end
+    for _ in 1:nshuffle
+        shuffle!(v)
+    end
+    return v
+end
+
 @testset "Internals" begin
     @testset "WAH Vector Elements" begin
         @testset "Constructors" begin
@@ -168,6 +189,12 @@ using WAHVectors
                 e1 = WAHVectors.WAHElement(v, n)
                 @test WAHVectors.runfill(e1) == ifelse(v == 0x00000001, 0x7FFFFFFF, 0x00000000)
             end
+        end
+    end
+
+    @testset "WAHVectors" begin
+        @testset "round trip" begin
+
         end
     end
 end
