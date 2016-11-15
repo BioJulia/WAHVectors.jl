@@ -118,7 +118,7 @@ function Base.convert(::Type{Vector{UInt32}}, vec::WAHVector)
     freebits = UInt64(32)
     for element in vec.data
         if isruns(element)
-            ridx, freebits = append_runs!(result, element, ridx, freebits)
+            ridx, freebits = append_run!(result, element, ridx, freebits)
         else
             ridx, freebits = append_literal!(result, element, ridx, freebits)
         end
