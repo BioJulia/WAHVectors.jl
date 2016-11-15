@@ -12,15 +12,15 @@
 Create a Vector of WAHElement from a Vector of UInt32.
 """
 function Base.convert(::Type{Vector{WAHElement}}, arr::Vector{UInt32})
-    n_cmp = (x[1] & UInt32(1)) << 30
-    t_cmp = x[1] >> 1
+    n_cmp = (arr[1] & UInt32(1)) << 30
+    t_cmp = arr[1] >> 1
     v = Vector{WAHElement}(0)
     push!(v, t_cmp)
-    @inbounds for i in 2:endof(x)
-        t_cmp = x[i] >> 1
+    @inbounds for i in 2:endof(arr)
+        t_cmp = arr[i] >> 1
         t_cmp = t_cmp | n_cmp
         append_literal!(v, WAHElement(t_cmp))
-        n_cmp = (x[i] & UInt32(1)) << 30
+        n_cmp = (arr[i] & UInt32(1)) << 30
     end
     return v
 end
