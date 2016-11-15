@@ -153,7 +153,7 @@ function Base.:&(x::WAHVector, y::WAHVector)
 end
 
 function Base.show(io::IO, x::WAHVector)
-    println("$(length(x))-element WAHVector storing $(nwords(x)) words:")
+    println("$(length(x.data))-element WAHVector storing $(x.nwords) words:")
     for element in x.data
         show(io, element)
     end
