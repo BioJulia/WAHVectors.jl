@@ -152,6 +152,13 @@ function Base.:&(x::WAHVector, y::WAHVector)
     return result
 end
 
+function Base.show(io::IO, x::WAHVector)
+    println("$(length(x))-element WAHVector storing $(nwords(x)) words:")
+    for element in x.data
+        show(io, element)
+    end
+end
+
 # Non-Exported operations
 # -----------------------
 

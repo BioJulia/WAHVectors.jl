@@ -138,8 +138,8 @@ nbits(x::WAHElement) = UInt64(31) * UInt64(nwords(x))
 function Base.show(io::IO, element::WAHElement)
     rf = hex(runfill(element))
     if isruns(element)
-        println(io, "$(nruns(element)) x $rf.")
+        println(io, "$(nruns(element)) x $rf")
     else
-        println(io, "1 x $rf.")
+        println(io, "1 x $rf")
     end
 end
