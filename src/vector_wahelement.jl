@@ -25,6 +25,32 @@ function Base.convert(::Type{Vector{WAHElement}}, arr::Vector{UInt32})
     return v
 end
 
+mask32(n::Integer) = (0x00000001 << n) - 0x00000001
+mask32(bits::UInt32, n::Integer) = bits & mask32(n)
+
+@inline function free_bit32(inbits::UInt32)
+    return inbits >> 1, (inbits & 0x00000001) << 30, 2
+end
+
+@inline function free_bit32(rmnbits::UInt32, new32::UInt32, shift::Int)
+    b31 = (new32 >> shift) | rmnbits
+    newrmn = mask32(new32, shift) << (31 - shift)
+    return b31, newrmn, shift + 1
+end
+
+function map_32bits_to_31bits(arr::Vector{UInt32})
+    v = Vector{UInt32}(0)
+    tail_31, current_31, sft = free_bit32(arr[1])
+    push!(v, tail_31)
+    for i in 2:endof(arr)
+        tail_31, current_31, sft = free_bit32(current_31, arr[i], sft)
+        push!(v, tail_31)
+    end
+    push!(v, current_31)
+    return v
+end
+
+
 """
     append_literal!(a, element)
 
