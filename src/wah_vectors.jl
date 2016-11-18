@@ -9,6 +9,19 @@
 # Type definition
 # ---------------
 
+"""
+The `WAHVector` type represents a bitmap encoded as a Word Aligned Hybrid
+succinct data structure.
+
+It has two fields:
+
+The `data`, field stores a set of `WAHElements` which encode the actual data as
+a set of elements which either represent a literal set of 31 bits or a
+run of identical 31 bit words.
+
+The `nwords` field simply tracks the number of words contained within the
+`WAHVector`.
+"""
 type WAHVector
     data::Vector{WAHElement}
     nwords::UInt64

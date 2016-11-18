@@ -10,8 +10,7 @@ immutable Every31Bits{T}
     data::T
 end
 
-# General Every31Bits methods
-# ===========================
+# General methods.
 
 Base.eltype(iter::Every31Bits)= UInt32
 
@@ -19,12 +18,9 @@ Base.eltype(iter::Every31Bits)= UInt32
     return 1
 end
 
-# Specific methods for specific Every31Bits iterators
-# ===================================================
+# Specific methods.
 
-@inline function Base.length(iter::Every31Bits{BitVector})
-    return UInt64(ceil(length(iter.data) / 31))
-end
+# BitVectors.
 
 @inline function Base.next(iter::Every31Bits{BitVector}, state::Int)
     chunk = 0x00000000
@@ -40,4 +36,22 @@ end
 
 @inline function Base.done(iter::Every31Bits{BitVector}, state::Int)
     return state > length(iter.data)
+end
+
+@inline function Base.length(iter::Every31Bits{BitVector})
+    return UInt64(ceil(length(iter.data) / 31))
+end
+
+# WAHVectors
+
+@inline function Base.start(iter::Every31Bits{WAHVector})
+    return (1,nwords(iter.data.data[1]))
+end
+
+@inline function Base.next(iter::Every31Bits{WAHVector}, state)
+    elem = iter.data.data[state[1]]
+end
+
+@inline function Base.length(iter::Every31Bits{WAHVector})
+    return nwords(iter.data)
 end

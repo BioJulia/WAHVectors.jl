@@ -40,4 +40,5 @@ pages:
 - Home: index.md
 - Manual:
   - Installation: man/install.md
+  - WAHVectors: man/wahvectors.md
 - Contributing: man/contributing.md
