@@ -23,7 +23,7 @@ end
 
 function Base.convert(::Type{WAHVector}, vec::BitVector)
     i = Every31Bits(vec)
-    return WAHVector(convert(Vector{WAHElement}), length(i))
+    return WAHVector(convert(Vector{WAHElement}, i), length(i))
 end
 
 
