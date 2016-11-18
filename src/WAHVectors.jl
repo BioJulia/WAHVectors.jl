@@ -9,7 +9,9 @@
 module WAHVectors
 
 include("wah_elements.jl")
+include("31_bit_iteration.jl")
 include("vector_wahelement.jl")
+
 include("wah_vectors.jl")
 include("wah_cursor.jl")
 

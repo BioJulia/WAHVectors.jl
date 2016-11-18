@@ -1,7 +1,7 @@
 # WAH Vectors
 # ===========
 #
-# Construction of a WAHVectors.
+# Definition of WAHVectors.
 #
 # This file is a part of BioJulia.
 # License is MIT: https://github.com/BioJulia/WAHVectors.jl/blob/master/LICENSE.md
@@ -21,6 +21,13 @@ function WAHVector()
     return WAHVector(Vector{WAHElement}(0), UInt64(0))
 end
 
+function Base.convert(::Type{WAHVector}, vec::BitVector)
+    i = Every31Bits(vec)
+    return WAHVector(convert(Vector{WAHElement}), length(i))
+end
+
+
+
 function WAHVector(vec::Vector{UInt32})
     return WAHVector(convert(Vector{WAHElement}, vec), length(vec))
 end
@@ -30,6 +37,7 @@ function WAHVector(element::WAHElement)
     push!(d, element)
     return WAHVector(d, UInt64(nwords(element)))
 end
+
 
 # Exported operations
 # -------------------

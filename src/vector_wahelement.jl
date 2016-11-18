@@ -7,51 +7,6 @@
 # License is MIT: https://github.com/BioJulia/WAHVectors.jl/blob/master/LICENSE.md
 
 """
-    convert(Vector{WAHElement}, arr)
-
-Create a Vector of WAHElement from a Vector of UInt32.
-"""
-function Base.convert(::Type{Vector{WAHElement}}, arr::Vector{UInt32})
-    n_cmp = (arr[1] & UInt32(1)) << 30
-    t_cmp = arr[1] >> 1
-    v = Vector{WAHElement}(0)
-    push!(v, t_cmp)
-    @inbounds for i in 2:endof(arr)
-        t_cmp = arr[i] >> 1
-        t_cmp = t_cmp | n_cmp
-        append_literal!(v, WAHElement(t_cmp))
-        n_cmp = (arr[i] & UInt32(1)) << 30
-    end
-    return v
-end
-
-mask32(n::Integer) = (0x00000001 << n) - 0x00000001
-mask32(bits::UInt32, n::Integer) = bits & mask32(n)
-
-@inline function free_bit32(inbits::UInt32)
-    return inbits >> 1, (inbits & 0x00000001) << 30, 2
-end
-
-@inline function free_bit32(rmnbits::UInt32, new32::UInt32, shift::Int)
-    b31 = (new32 >> shift) | rmnbits
-    newrmn = mask32(new32, shift) << (31 - shift)
-    return b31, newrmn, shift + 1
-end
-
-function map_32bits_to_31bits(arr::Vector{UInt32})
-    v = Vector{UInt32}(0)
-    tail_31, current_31, sft = free_bit32(arr[1])
-    push!(v, tail_31)
-    for i in 2:endof(arr)
-        tail_31, current_31, sft = free_bit32(current_31, arr[i], sft)
-        push!(v, tail_31)
-    end
-    push!(v, current_31)
-    return v
-end
-
-
-"""
     append_literal!(a, element)
 
 Append a WAHElement representing a literal binary value to a Vector{WAHElement}.
@@ -110,6 +65,28 @@ internal use only.
     end
 end
 
+"""
+    convert(Vector{WAHElement}, itr)
+
+Construct a `Vector` of `WAHElements` from an iterator which
+iterates over every 31 bits of a data structure, essentially providing
+the 31 bit words to be pushed onto a `Vector` of `WAHElements`.
+
+This is primarily intended for internal use but may be used externally.
+"""
+function Base.convert(::Type{Vector{WAHElement}}, itr::Every31Bits)
+    wah = Vector{WAHElement}()
+    state = start(itr)
+    bits, state = next(itr, state)
+    push!(wah, WAHElement(bits))
+    while !done(itr, state)
+        bits, state = next(itr, state)
+        append_literal!(wah, WAHElement(bits))
+    end
+    return wah
+end
+
+## Optional code which appends runs more slowly but ensures max compression.
 @inline function append_run_slow!(vec::Vector{WAHElement}, element::WAHElement)
     tail = vec[endof(vec)]
     # If the tail and the element to append are runs with the same fill value.
