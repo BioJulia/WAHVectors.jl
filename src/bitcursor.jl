@@ -1,5 +1,5 @@
 # bitcursor.jl
-# ===================
+# ============
 #
 # A type for tracking the current position when moving across a bitvector.
 #
@@ -12,10 +12,20 @@ immutable BitCursor{N<:Unsigned}
     bits::UInt
 end
 
+# Internal functions for generated functions
+# ------------------------------------------
+
+@inline function _numbits{T<:Unsigned}(::Type{T})
+    return sizeof(T) * 8
+end
+
+@inline function _makedivmod{T<:Unsigned}(::Type{T})
+    bs = _numbits(T)
+    return 1 / bs, bs - 1
+end
+
 @inline @generated function Base.convert{N<:Unsigned}(::Type{BitCursor{N}}, idx::Unsigned)
-    bs = sizeof(N) * 8
-    div = 1 / bs
-    mod = bs - 1
+    div, mod = _makedivmod(N)
     quote
         BitCursor{N}(UInt(floor(idx * $div)), idx & $mod)
     end
@@ -25,22 +35,47 @@ end
     return BitCursor{N}(UInt(1))
 end
 
-@inline @generated function Base.:(+){N<:Unsigned}(x::BitCursor{N}, nbits::Unsigned)
-    bs = sizeof(N) * 8
-    div = 1 / bs
-    mod = bs - 1
+@inline @generated function bitidx{N}(x::BitCursor{N})
+    bs = _numbits(N)
     quote
-        incbits = x.bits + nbits
-        incchunks = x.chunks + UInt(floor(incbits * $div))
-        incbits &= $mod
-        BitCursor{N}(incchunks, incbits)
+        return ($bs * chunks(x)) + x.bits
     end
 end
 
-@inline function bitidx{N}(x::BitCursor{N})
-    return (N * x.chunks) + x.bits
+@inline function chunks(x::BitCursor)
+    return x.chunks
 end
 
-@inline function currentword(x::BitCursor)
-    return x.chunks + UInt(1)
+@inline function bits(x::BitCursor)
+    return x.bits
+end
+
+@inline @generated function goforward{N<:Unsigned}(x::BitCursor{N}, nbits::Unsigned)
+    div, mod = _makedivmod(N)
+
+    quote
+        incbits = bits(x) + nbits
+        incchunks = chunks(x) + UInt(floor(incbits * $div))
+        incbits &= $mod
+        return BitCursor{N}(incchunks, incbits)
+    end
+end
+
+@inline @generated function goforward{N<:Unsigned}(x::BitCursor{N}, y::BitCursor{N})
+    div, mod = _makedivmod(N)
+
+    quote
+        bitsum = bits(x) + bits(y)
+        chunksum = chunks(x) + chunks(y) + UInt(floor(bitsum * $div))
+        bitsum &= $mod
+        return BitCursor{N}(chunksum, bitsum)
+    end
+end
+
+@inline function Base.:(+)(x::BitCursor, y::UInt)
+    return goforward(x, y)
+end
+
+@inline function Base.:(+)(x::BitCursor, y::BitCursor)
+    return goforward(x, y)
 end
