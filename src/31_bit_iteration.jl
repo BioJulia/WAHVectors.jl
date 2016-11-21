@@ -1,5 +1,5 @@
-# 31_bit_iteration.jl
-# ===================
+# each_word_iteration.jl
+# ======================
 #
 # An iterator over arrays of binary fetching 31 bits at a time.
 #
