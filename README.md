@@ -1,5 +1,7 @@
 # WAHVectors.jl
 
+[![Join the chat at https://gitter.im/BioJulia/WAHVectors.jl](https://badges.gitter.im/BioJulia/WAHVectors.jl.svg)](https://gitter.im/BioJulia/WAHVectors.jl?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ## Description
 Compress bit vectors using the Word Aligned Hybrid method.
 
