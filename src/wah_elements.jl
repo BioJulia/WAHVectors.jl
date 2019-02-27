@@ -13,6 +13,7 @@ primitive type WAHElement 32 end
 Base.convert(::Type{WAHElement}, x::UInt32) = reinterpret(WAHElement, x)
 Base.convert(::Type{UInt32}, x::WAHElement) = reinterpret(UInt32, x)
 
+WAHElement(x::UInt32) = convert(WAHElement, x)
 function WAHElement(value::UInt32, nwords::UInt32)
     @assert nwords <= WAH_MAX_NWORDS "nwords is too big"
     return WAHElement(((0x00000002 + value) << 30) + nwords)
