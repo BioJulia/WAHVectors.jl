@@ -16,7 +16,7 @@ Base.convert(::Type{UInt32}, x::WAHElement) = reinterpret(UInt32, x)
 WAHElement(x::UInt32) = convert(WAHElement, x)
 function WAHElement(value::UInt32, nruns::UInt32)
     @assert nruns ≤ WAH_MAX_NRUNS "nruns is too big"
-    return WAHElement(((0x00000002 + value) << 30) + nwords)
+    return WAHElement(((0x00000002 + value) << 30) + nruns)
 end
 
 const WAH_LITERAL_ZEROS = convert(WAHElement, 0x00000000)
