@@ -190,13 +190,14 @@ end
             end
         end
     end
-
+#=
     @testset "WAHVectors" begin
         @testset "round trip" begin
             bv = make_random_bitvector(10, 20, 10, 5)
             @test convert(Vector{UInt32}, WAHVector(bv)) == bv
         end
     end
+=#
 end
 
 end
