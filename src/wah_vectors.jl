@@ -22,7 +22,7 @@ run of identical 31 bit words.
 The `nwords` field simply tracks the number of words contained within the
 `WAHVector`.
 """
-type WAHVector
+mutable struct WAHVector
     data::Vector{WAHElement}
     nwords::UInt64
 end

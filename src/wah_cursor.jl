@@ -7,7 +7,7 @@
 # This file is a part of BioJulia.
 # License is MIT: https://github.com/BioJulia/WAHVectors.jl/blob/master/LICENSE.md
 
-type WAHCursor
+mutable struct WAHCursor
     wahvec::WAHVector
     len::Int
     word_i::Int
