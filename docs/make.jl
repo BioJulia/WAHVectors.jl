@@ -9,7 +9,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "API" => [
-            "WAHElements" => "api_elements.md"
+            "WAHElements" => "man/api_elements.md"
         ]
     ],
     authors = "Ben J. Ward"
