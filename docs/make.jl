@@ -3,7 +3,7 @@ using Documenter, WAHVectors
 makedocs(
     format = :html,
     modules = [WAHVectors],
-    sitename = WAHVectors,
+    sitename = "WAHVectors",
     doctest = false,
     strict = false,
     pages = [
