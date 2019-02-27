@@ -3,19 +3,23 @@ os:
   - linux
   - osx
 julia:
-  - 0.5
+  - 1.1
   - nightly
-matrix:
-  allow_failures:
-    - julia: nightly
 notifications:
-  email: false
-# sudo: false
-before_script:
-  - export PATH=$HOME/.local/bin:$PATH
-script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("WAHVectors"); Pkg.test("WAHVectors"; coverage=true)'
-after_success:
-  - julia -e 'cd(Pkg.dir("WAHVectors")); Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
-  - julia -e 'cd(Pkg.dir("WAHVectors")); Pkg.add("Documenter"); include(joinpath("docs", "make.jl"))'
+  email:
+      - benjward@protonmail.com
+
+branches:
+    only:
+      - master
+
+jobs:
+    include:
+        - stage: "Documentation"
+          julia: 1.1
+          os: linux
+          script:
+            - julia --project=docs/ -e 'using Pkg; Pkg.instantiate();
+                                        Pkg.develop(PackageSpec(path=pwd()))'
+            - julia --project=docs/ docs/make.jl
+          after_success: skip

@@ -1,0 +1,4 @@
+name = "WAHVectors"
+uuid = "b9a86056-3a26-11e9-2689-cf8f8ef6f86b"
+authors = ["Ben J. Ward <benjward@protonmail.com>"]
+version = "0.1.0"
