@@ -1,7 +1,6 @@
 module WAHTest
 
-using Base.Test
-
+using Test
 using WAHVectors
 
 function make_random_bitvector(n0, nF, nX, nshuffle)
