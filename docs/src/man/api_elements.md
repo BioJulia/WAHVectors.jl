@@ -1,13 +1,13 @@
 # API: WAHElements
 
 ```@docs
-isruns(x::WAHElement)
-isliteral(x::WAHElement)
-is_zeros_runs(x::WAHElement)
-is_ones_runs(x::WAHElement)
-nwords(x::WAHElement)
-runval(x::WAHElement)
-nruns(x::WAHElement)
-nfree(x::WAHElement)
-isfull(x::WAHElement)
+WAHVectors.isruns(x::WAHVectors.WAHElement)
+WAHVectors.isliteral(x::WAHVectors.WAHElement)
+WAHVectors.is_zeros_runs(x::WAHVectors.WAHElement)
+WAHVectors.is_ones_runs(x::WAHVectors.WAHElement)
+WAHVectors.nwords(x::WAHVectors.WAHElement)
+WAHVectors.runval(x::WAHVectors.WAHElement)
+WAHVectors.nruns(x::WAHVectors.WAHElement)
+WAHVectors.nfree(x::WAHVectors.WAHElement)
+WAHVectors.isfull(x::WAHVectors.WAHElement)
 ```
