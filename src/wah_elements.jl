@@ -14,8 +14,8 @@ Base.convert(::Type{WAHElement}, x::UInt32) = reinterpret(WAHElement, x)
 Base.convert(::Type{UInt32}, x::WAHElement) = reinterpret(UInt32, x)
 
 WAHElement(x::UInt32) = convert(WAHElement, x)
-function WAHElement(value::UInt32, nwords::UInt32)
-    @assert nwords <= WAH_MAX_NWORDS "nwords is too big"
+function WAHElement(value::UInt32, nruns::UInt32)
+    @assert nwords <= WAH_MAX_NRUNS "nruns is too big"
     return WAHElement(((0x00000002 + value) << 30) + nwords)
 end
 
@@ -24,7 +24,7 @@ const WAH_LITERAL_ONES = convert(WAHElement, 0x7FFFFFFF)
 
 const WAH_FULL_ZEROS = convert(WAHElement, 0xBFFFFFFF)
 const WAH_FULL_ONES = convert(WAHElement, 0xFFFFFFFF)
-const WAH_MAX_NWORDS = 0x3FFFFFFF
+const WAH_MAX_NRUNS = 0x3FFFFFFF
 
 # Basic general operations on WAHElements
 # ---------------------------------------
@@ -43,15 +43,6 @@ represents a compressed run of words. Otherwise return `false`.
 isruns(x::WAHElement) = convert(UInt32, x) ≥ 0x80000000
 
 """
-    isliteral(x::WAHElement)
-
-Return `true` if the element of the WAH compressed bit array `x`
-represents a literal word rather than a compressed run of words, in
-which case this function will return `false`.
-"""
-isliteral(x::WAHElement) = convert(UInt32, x) < 0x80000000
-
-"""
     is_zeros_runs(x::WAHElement)
 
 Return `true` if the WAH Element represents a compressed run of all zero words.
@@ -64,6 +55,20 @@ is_zeros_runs(x::WAHElement) = 0xC0000000 > convert(UInt32, x) ≥ 0x80000000
 Return `true` if the WAH Element represents a compressed run of all one words.
 """
 is_ones_runs(x::WAHElement) = convert(UInt32, x) ≥ 0xC0000000
+
+
+
+
+"""
+    isliteral(x::WAHElement)
+
+Return `true` if the element of the WAH compressed bit array `x`
+represents a literal word rather than a compressed run of words, in
+which case this function will return `false`.
+"""
+isliteral(x::WAHElement) = convert(UInt32, x) < 0x80000000
+
+
 
 """
     nwords(x::WAHElement)
@@ -101,7 +106,7 @@ is a compressed element.
     represents a literal word (i.e. `isliteral(x)` returns `true`) rather
     than a number of compressed words.
 """
-nruns(x::WAHElement) = convert(UInt32, x) & WAH_MAX_NWORDS
+nruns(x::WAHElement) = convert(UInt32, x) & WAH_MAX_NRUNS
 
 """
     nfree(x::WAHElement)
@@ -113,7 +118,7 @@ Return how many more words this WAHElement can compress into it.
     represents a literal word (i.e. `isliteral(x)` returns `true`) rather
     than a number of compressed words.
 """
-nfree(x::WAHElement) = WAH_MAX_NWORDS - nruns(x)
+nfree(x::WAHElement) = WAH_MAX_NRUNS - nruns(x)
 
 """
     isfull(x::WAHElement)
@@ -129,8 +134,8 @@ isfull(x::WAHElement) = (x == WAH_FULL_ZEROS) || (x == WAH_FULL_ONES)
 
 matchingfills(x::WAHElement, y::WAHElement) = (convert(UInt32, x) >> 30) == (convert(UInt32, y) >> 30)
 
-hasroom(x::WAHElement) = nruns(x) < WAH_MAX_NWORDS
-hasroom(x::WAHElement, required::UInt32) = (nruns(x) + required) < WAH_MAX_NWORDS
+hasroom(x::WAHElement) = nruns(x) < WAH_MAX_NRUNS
+hasroom(x::WAHElement, required::UInt32) = (nruns(x) + required) < WAH_MAX_NRUNS
 
 increment_nruns_unsafe(x::WAHElement) = WAHElement(convert(UInt32, x) + 0x00000001)
 increment_nruns_unsafe(x::WAHElement, y::UInt32) = WAHElement(convert(UInt32, x) + y)
@@ -142,7 +147,7 @@ end
 nbits(x::WAHElement) = UInt64(31) * UInt64(nwords(x))
 
 function Base.show(io::IO, element::WAHElement)
-    rf = hex(runfill(element))
+    rf = string(runfill(element), base = 16, pad = 2)
     if isruns(element)
         println(io, "$(nruns(element)) x $rf")
     else
