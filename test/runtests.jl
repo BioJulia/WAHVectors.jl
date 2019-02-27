@@ -29,8 +29,8 @@ end
         @testset "Constructors" begin
             for _ in 1:100
                 n = rand(0x00000001:WAHVectors.WAH_MAX_NRUNS)
-                @test WAHVectors.WAHElement(0x00000000, n) == reinterpret(WAHVectors.WAHElement, 0x80000000 + n)
-                @test WAHVectors.WAHElement(0x00000001, n) == reinterpret(WAHVectors.WAHElement, 0xC0000000 + n)
+                @test WAHVectors.WAHElement(0x00000000, n) == convert(WAHVectors.WAHElement, 0x80000000 + n)
+                @test WAHVectors.WAHElement(0x00000001, n) == convert(WAHVectors.WAHElement, 0xC0000000 + n)
             end
         end
         @testset "isruns" begin
